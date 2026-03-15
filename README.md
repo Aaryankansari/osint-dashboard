@@ -23,10 +23,15 @@
 - 🚗 **Procedural Traffic**: Algorithmic particle-system traffic simulation over major global tech hubs (NYC, SF, London) to create a lively environment without the performance hit of heavy OSM vector loads.
 - 🎯 **Target Lock Intel Panel**: Interactive tracking. Clicking on any entity (flight, satellite, ship) snaps the camera to the target and populates a dynamic threat-intel sidebar with detailed telemetry.
 - 🎥 **Cinematic WebGL Shaders**:
-  - `NORMAL`: High-resolution satellite view.
+  - `NORMAL`: High-resolution satellite view with HDR Bloom effects.
   - `CRT`: 1980s command-center aesthetic with barrel distortion, scanlines, and RGB chromatic aberration.
   - `NVG`: P43 Phosphor Green military night-vision mapping with ISO noise.
   - `FLIR`: High-contrast White-Hot thermal imaging aesthetic.
+- 🔗 **Intelligence Correlation**: Automatically draws visual links between selected targets and nearby entities (within 1000km).
+- 🕒 **Simulation Scrubbing**: Predict future satellite and flight positions with the integrated timeline control (up to 24h prediction).
+- ⚡ **Performance Optimized**: 
+  - SGP4 orbital calculations offloaded to Web Workers.
+  - Dynamic Flight Clustering (LOD) for 60fps performance at global zoom levels.
 
 ## 🚀 Getting Started
 
@@ -52,7 +57,9 @@
    npm run dev
    ```
 
-4. Open your browser and navigate to `http://localhost:5173`.
+4. Open your browser and navigate to:
+   - **Development**: `http://localhost:5173`
+   - **Production Preview**: `http://localhost:4173` (after running `npm run build`)
 
 ## 🛠️ Architecture
 - **Frontend Framework**: React 18 + TypeScript

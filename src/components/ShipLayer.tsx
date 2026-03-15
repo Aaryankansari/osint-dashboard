@@ -14,6 +14,7 @@ export default function ShipLayer({ viewer }: ShipLayerProps) {
   
   const isActive = useAppStore(state => state.layers.ships);
   const updateLayerStats = useAppStore(state => state.updateLayerStats);
+  const updateLayerLastSync = useAppStore(state => state.updateLayerLastSync);
 
   // Fetch initial data
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function ShipLayer({ viewer }: ShipLayerProps) {
       if (isMounted) {
         setShips(stats);
         updateLayerStats('ships', stats.length);
+        updateLayerLastSync('ships');
       }
     };
     loadData();
@@ -32,7 +34,7 @@ export default function ShipLayer({ viewer }: ShipLayerProps) {
       isMounted = false; 
       clearInterval(interval);
     };
-  }, [updateLayerStats]);
+  }, [updateLayerStats, updateLayerLastSync]);
 
   // Manage Cesium Rendering Lifecycle
   useEffect(() => {

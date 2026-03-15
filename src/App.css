@@ -1,42 +1,444 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* ================================================
+   OSINT DASHBOARD — HUD ANIMATIONS & EFFECTS
+   ================================================ */
+
+/* --- Keyframe Animations --- */
+
+/* Rotating radar sweep */
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Pulsing glow for live indicators */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; box-shadow: 0 0 4px rgba(0, 255, 255, 0.2); }
+  50% { opacity: 1; box-shadow: 0 0 12px rgba(0, 255, 255, 0.6); }
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Horizontal scanline moving down */
+@keyframes scanline-move {
+  0% { top: -2px; }
+  100% { top: 100%; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Animated border trace for panels */
+@keyframes border-trace {
+  0% { background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%; }
+  25% { background-position: 100% 0%, 100% 100%, 0% 100%, 0% 0%; }
+  50% { background-position: 100% 100%, 0% 100%, 0% 0%, 100% 0%; }
+  75% { background-position: 0% 100%, 0% 0%, 100% 0%, 100% 100%; }
+  100% { background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%; }
 }
 
-.card {
-  padding: 2em;
+/* Glitch text flicker */
+@keyframes glitch-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.7; transform: translateX(2px); }
+  94% { opacity: 1; transform: translateX(-1px); }
+  95% { opacity: 0.8; }
+  96% { opacity: 1; transform: translateX(0); }
 }
 
-.read-the-docs {
-  color: #888;
+/* Data stream ticker scroll */
+@keyframes ticker-scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Corner bracket flash on target lock */
+@keyframes bracket-flash {
+  0%, 100% { border-color: rgba(0, 255, 255, 0.3); }
+  50% { border-color: rgba(0, 255, 255, 0.9); }
+}
+
+/* Fade-in slide from left */
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Fade-in slide from right */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Fade-in slide from bottom */
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Crosshair rotation */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Breathing glow */
+@keyframes breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* Status indicator blink */
+@keyframes status-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* --- Utility Classes --- */
+
+.animate-radar-sweep {
+  animation: radar-sweep 8s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-scanline {
+  animation: scanline-move 4s linear infinite;
+}
+
+.animate-border-trace {
+  animation: border-trace 4s linear infinite;
+}
+
+.animate-glitch {
+  animation: glitch-flicker 5s step-end infinite;
+}
+
+.animate-ticker {
+  animation: ticker-scroll 30s linear infinite;
+}
+
+.animate-bracket-flash {
+  animation: bracket-flash 1.5s ease-in-out infinite;
+}
+
+.animate-slide-left {
+  animation: slide-in-left 0.4s ease-out forwards;
+}
+
+.animate-slide-right {
+  animation: slide-in-right 0.4s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-in-up 0.4s ease-out forwards;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+.animate-status-blink {
+  animation: status-blink 1s step-end infinite;
+}
+
+/* --- HUD Corner Brackets --- */
+
+.hud-corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.hud-corner--tl {
+  top: 0; left: 0;
+  border-top: 2px solid rgba(0, 255, 255, 0.5);
+  border-left: 2px solid rgba(0, 255, 255, 0.5);
+}
+
+.hud-corner--tr {
+  top: 0; right: 0;
+  border-top: 2px solid rgba(0, 255, 255, 0.5);
+  border-right: 2px solid rgba(0, 255, 255, 0.5);
+}
+
+.hud-corner--bl {
+  bottom: 0; left: 0;
+  border-bottom: 2px solid rgba(0, 255, 255, 0.5);
+  border-left: 2px solid rgba(0, 255, 255, 0.5);
+}
+
+.hud-corner--br {
+  bottom: 0; right: 0;
+  border-bottom: 2px solid rgba(0, 255, 255, 0.5);
+  border-right: 2px solid rgba(0, 255, 255, 0.5);
+}
+
+/* --- Animated Panel Border --- */
+
+.panel-animated-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-animated-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 255, 255, 0.4) 25%,
+    rgba(0, 255, 255, 0.8) 50%,
+    rgba(0, 255, 255, 0.4) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: border-trace 3s linear infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* --- Radar Mini Element --- */
+
+.radar-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  overflow: hidden;
+}
+
+.radar-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.8), transparent);
+  transform-origin: left center;
+  animation: radar-sweep 3s linear infinite;
+}
+
+.radar-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 30%, rgba(0, 255, 255, 0.03) 60%, rgba(0, 255, 255, 0.08) 100%);
+}
+
+/* Radar rings */
+.radar-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* --- Moving Scanline Overlay (for panels) --- */
+
+.scanline-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline-overlay::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.15), transparent);
+  animation: scanline-move 5s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* --- Layer Toggle Hover Effect --- */
+
+.layer-item {
+  position: relative;
+  transition: all 0.2s ease;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-left: 2px solid transparent;
+}
+
+.layer-item:hover {
+  background: rgba(0, 255, 255, 0.05);
+  border-left-color: rgba(0, 255, 255, 0.3);
+}
+
+.layer-item.layer-active {
+  border-left-color: rgba(0, 255, 255, 0.6);
+  background: rgba(0, 255, 255, 0.03);
+}
+
+/* --- Stats Ticker Bar --- */
+
+.stats-ticker {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.stats-ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.stats-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.stats-dot--live {
+  background: #39ff14;
+  box-shadow: 0 0 6px rgba(57, 255, 20, 0.6);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.stats-dot--idle {
+  background: rgba(255, 176, 0, 0.5);
+}
+
+/* --- Keyboard Shortcut Badge --- */
+
+.kbd-hint {
+  font-size: 9px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.layer-item:hover .kbd-hint {
+  border-color: rgba(0, 255, 255, 0.4);
+  color: rgba(0, 255, 255, 0.6);
+}
+
+/* --- Target Lock Panel Glow --- */
+
+.target-lock-active {
+  box-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.1),
+    inset 0 0 30px rgba(0, 255, 255, 0.03);
+}
+
+/* --- Title Decoration --- */
+
+.title-decoration {
+  position: relative;
+}
+
+.title-decoration::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.6), transparent 70%);
+}
+
+/* --- Shader Button Styles --- */
+
+.shader-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.shader-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+  transition: left 0.4s ease;
+}
+
+.shader-btn:hover::before {
+  left: 100%;
+}
+
+/* --- Misc Enhancements --- */
+
+/* Smooth transitions for all interactive elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Better focus styles */
+button:focus-visible {
+  outline: 1px solid rgba(0, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+/* Neon text glow utility */
+.text-glow-cyan {
+  text-shadow: 
+    0 0 4px rgba(0, 255, 255, 0.4),
+    0 0 8px rgba(0, 255, 255, 0.2);
+}
+
+.text-glow-green {
+  text-shadow: 
+    0 0 4px rgba(57, 255, 20, 0.4),
+    0 0 8px rgba(57, 255, 20, 0.2);
+}
+
+.text-glow-red {
+  text-shadow: 
+    0 0 4px rgba(255, 70, 70, 0.4),
+    0 0 8px rgba(255, 70, 70, 0.2);
+}
+
+.text-glow-amber {
+  text-shadow: 
+    0 0 4px rgba(255, 176, 0, 0.4),
+    0 0 8px rgba(255, 176, 0, 0.2);
+}
+
+/* --- Custom Scrollbar for Command Palette --- */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.6);
 }

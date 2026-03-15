@@ -11,9 +11,14 @@ interface FlightLayerProps {
 export default function FlightLayer({ viewer }: FlightLayerProps) {
   const [flights, setFlights] = useState<FlightRecord[]>([]);
   const pointCollection = useRef<Cesium.PointPrimitiveCollection | null>(null);
+  const lineCollection = useRef<Cesium.PolylineCollection | null>(null);
+  
+  // To draw trails, we need to keep a brief history of positions for each flight
+  const flightHistory = useRef<Record<string, Cesium.Cartesian3[]>>({});
   
   const isActive = useAppStore(state => state.layers.flights);
   const updateLayerStats = useAppStore(state => state.updateLayerStats);
+  const updateLayerLastSync = useAppStore(state => state.updateLayerLastSync);
 
   // Fetch initial data
   useEffect(() => {
@@ -26,6 +31,7 @@ export default function FlightLayer({ viewer }: FlightLayerProps) {
       if (isMounted) {
         setFlights(stats);
         updateLayerStats('flights', stats.length);
+        updateLayerLastSync('flights');
       }
     };
     
@@ -40,7 +46,7 @@ export default function FlightLayer({ viewer }: FlightLayerProps) {
       isMounted = false; 
       clearInterval(interval);
     };
-  }, [updateLayerStats, isActive]);
+  }, [updateLayerStats, updateLayerLastSync, isActive]);
 
   // Manage Cesium Rendering Lifecycle
   useEffect(() => {
@@ -49,18 +55,44 @@ export default function FlightLayer({ viewer }: FlightLayerProps) {
         viewer.scene.primitives.remove(pointCollection.current);
         pointCollection.current = null;
       }
+      if (lineCollection.current && viewer) {
+        viewer.scene.primitives.remove(lineCollection.current);
+        lineCollection.current = null;
+      }
+      flightHistory.current = {}; // Clear history when layer is hidden
       return;
     }
 
-    // Always re-create the collection when data updates to prevent stale objects
+    // Always re-create the collections when data updates to prevent stale objects
     if (pointCollection.current) {
       viewer.scene.primitives.remove(pointCollection.current);
     }
+    if (lineCollection.current) {
+      viewer.scene.primitives.remove(lineCollection.current);
+    }
 
     pointCollection.current = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
+    lineCollection.current = viewer.scene.primitives.add(new Cesium.PolylineCollection());
+    
+    // Clean up history for flights that are no longer in the current dataset
+    const currentFlightIds = new Set(flights.map(f => f.callsign));
+    Object.keys(flightHistory.current).forEach(id => {
+       if (!currentFlightIds.has(id)) {
+          delete flightHistory.current[id];
+       }
+    });
+
+    // Determine clustering level based on camera height
+    const cameraHeight = viewer.camera.positionCartographic.height;
+    const isZoomedOut = cameraHeight > 3000000; // Above 3000km
+    const isVeryZoomedOut = cameraHeight > 10000000; // Above 10000km
     
     const points: Cesium.PointPrimitive[] = [];
-    flights.forEach((flight) => {
+    flights.forEach((flight, index) => {
+      // Clustering Logic: Skip items based on zoom level to declutter
+      if (isVeryZoomedOut && index % 10 !== 0) return;
+      if (isZoomedOut && index % 3 !== 0) return;
+
       // Flights are placed at their geometric altitude
       const position = Cesium.Cartesian3.fromDegrees(flight.lon, flight.lat, flight.altitude);
       
@@ -97,6 +129,27 @@ export default function FlightLayer({ viewer }: FlightLayerProps) {
         }
       });
       points.push(p);
+
+      // Update history for trails
+      if (!flightHistory.current[flight.callsign]) {
+         flightHistory.current[flight.callsign] = [];
+      }
+      flightHistory.current[flight.callsign].push(position);
+      // Keep only last 10 points (~5 minutes of history)
+      if (flightHistory.current[flight.callsign].length > 10) {
+         flightHistory.current[flight.callsign].shift();
+      }
+
+      // Draw trail if we have history
+      if (flightHistory.current[flight.callsign].length > 1) {
+         lineCollection.current!.add({
+            positions: flightHistory.current[flight.callsign],
+            width: 2,
+            material: Cesium.Material.fromType('Color', {
+               color: color.withAlpha(0.3)
+            })
+         });
+      }
     });
 
     viewer.scene.requestRender();
@@ -105,6 +158,10 @@ export default function FlightLayer({ viewer }: FlightLayerProps) {
       if (pointCollection.current && viewer) {
         viewer.scene.primitives.remove(pointCollection.current);
         pointCollection.current = null;
+      }
+      if (lineCollection.current && viewer) {
+        viewer.scene.primitives.remove(lineCollection.current);
+        lineCollection.current = null;
       }
     };
   }, [viewer, flights, isActive]);

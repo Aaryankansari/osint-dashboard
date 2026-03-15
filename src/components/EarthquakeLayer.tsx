@@ -14,6 +14,7 @@ export default function EarthquakeLayer({ viewer }: EarthquakeLayerProps) {
   
   const isActive = useAppStore(state => state.layers.earthquakes);
   const updateLayerStats = useAppStore(state => state.updateLayerStats);
+  const updateLayerLastSync = useAppStore(state => state.updateLayerLastSync);
 
   // Fetch initial data
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function EarthquakeLayer({ viewer }: EarthquakeLayerProps) {
       if (isMounted) {
         setEarthquakes(stats);
         updateLayerStats('earthquakes', stats.length);
+        updateLayerLastSync('earthquakes');
       }
     };
     loadData();
@@ -32,7 +34,7 @@ export default function EarthquakeLayer({ viewer }: EarthquakeLayerProps) {
       isMounted = false; 
       clearInterval(interval);
     };
-  }, [updateLayerStats]);
+  }, [updateLayerStats, updateLayerLastSync]);
 
   // Manage Cesium Rendering Lifecycle
   useEffect(() => {

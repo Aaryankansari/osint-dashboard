@@ -10,15 +10,26 @@ export interface SatelliteRecord {
   satrec: satellite.SatRec;
 }
 
-export async function fetchSatelliteData(): Promise<SatelliteRecord[]> {
+export interface SatelliteFetchResult {
+  satellites: SatelliteRecord[];
+  rawTle: string;
+}
+
+export async function fetchSatelliteData(): Promise<SatelliteFetchResult> {
   try {
     const response = await fetch(CELESTRAK_URL);
     if (!response.ok) throw new Error('Failed to fetch TLE data');
     const tleText = await response.text();
-    return parseTLE(tleText);
+    return {
+       satellites: parseTLE(tleText),
+       rawTle: tleText
+    };
   } catch (error) {
     console.error("Error fetching satellite data, using mock fallback:", error);
-    return parseTLE(MOCK_TLE);
+    return {
+       satellites: parseTLE(MOCK_TLE),
+       rawTle: MOCK_TLE
+    };
   }
 }
 

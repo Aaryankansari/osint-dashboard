@@ -43,7 +43,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/osint-dashboard.git
+   git clone https://github.com/Aaryankansari/osint-dashboard.git
    cd osint-dashboard
    ```
 
